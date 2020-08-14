@@ -9,4 +9,6 @@ In other words, theres no need for the bot to run from the IDE; it can now be tu
 
 Update 8/5/20: Added perhaps the hardest thing, but the most anticipated feature I've wanted for a very long time: the ability to upload files through the bot and automatically rename and categorize images in .png format.
 
+Update 8/13/20: Added a small, but helpful thing, where the bot is able to save preferences (currently only the directory and token) into a basic text file. Reduces the irritable process of having to copy and paste the token every time the bot is turned on. Same applies of having to select a directory.
+
 Why is it called JoeBot? Dunno, just an ongoing joke among my friends.
