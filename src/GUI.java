@@ -1,5 +1,8 @@
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -7,6 +10,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -20,6 +25,7 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import net.dv8tion.jda.core.AccountType;
@@ -28,7 +34,7 @@ import net.dv8tion.jda.core.JDABuilder;
 
 public class GUI extends Application {
 	
-	//initialize bot api
+	//initialize bot api	
 	JDA api;
 	
 	//initalize file increment integer
@@ -40,6 +46,8 @@ public class GUI extends Application {
 	//initialize strings
 	String token;
 	String imageKeyword = "null";
+	String selectedDirectoryString;
+	
 	
 	//initialize labels
 	Label botStatus;
@@ -50,6 +58,10 @@ public class GUI extends Application {
     Button fileButton;
     Button restartButton;
     Button imageKeyWordButton;
+    Button chooseDirectoryButton;
+    
+    //initialize folder directory
+    File selectedDirectory;
     
     //initialize folder image names array
     ArrayList<String> fileNames = new ArrayList<String>();
@@ -61,67 +73,23 @@ public class GUI extends Application {
     //something here that i need but i dont know why
     public static void main(String[] args) {
         launch(args);
+        
+        
     }
 
     @Override
     //create the actual GUI, but not the bot listeners
     public void start(Stage primaryStage) {
+    	
+    	try {
+			readPreferences("preferences.txt");
+		} catch (IOException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
         //set title window
-    	primaryStage.setTitle("JoeBot");
-
-    	//file chooser
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Open Resource File");
-        
-        //create file button
-        fileButton = new Button("Add image"); 
-        fileButton.setStyle("-fx-font: 20 Consolas; -fx-base: #202020;");
-        fileButton.setOnAction(e -> {
-            
-        	//checks if keyword is null; if it is, then don't open resource window (causes errors when cancelled)
-        	if(!imageKeyword.equals("null")) {
-        		
-        		scanImagesFolder();
-                
-        		//open resource window after scanning folder
-                List<File> list = fileChooser.showOpenMultipleDialog(primaryStage);
-    	        try {	
-    	        	
-    	        	//this loop exists if multiple images are selected, which is amazing if i say so myself
-                	for(File file : list) {
-                		
-                		//scan again after each image is copied to ensure no replacements after each repetition
-    	        		scanImagesFolder();
-    	        		
-    	        		//get source and declare destination file
-    	        		Path from = Paths.get(file.toURI());
-    	        		
-    	        		//rename by increments
-    	                Path to = Paths.get("C:\\Users\\dern\\Desktop\\images\\" + imageKeyword + " " + increment + ".png");
-    	                
-    	                //copy the file to destination
-    	                CopyOption[] options = new CopyOption[]{
-    	                        StandardCopyOption.REPLACE_EXISTING,
-    	                        StandardCopyOption.COPY_ATTRIBUTES
-    	                };
-    	                try {
-    						Files.copy(from, to, options);
-    					} catch (IOException e1) {
-    						// TODO Auto-generated catch block
-    						e1.printStackTrace();
-    					}
-                	}
-    	        } catch (Exception eee) {
-    	        	
-    	        	//declare to file selected
-    	        	System.out.println("no files selected!");
-    	        } 	
-        	} else {
-        		//you can't have null (default placeholder) as a keyword dummy
-        		System.out.println("No keyword specified!");
-        	}
-            
-        });      
+    	primaryStage.setTitle("JoeBot");     
+    	
     	
         //create toggle button
         toggleButton = new Button("Run");
@@ -149,7 +117,13 @@ public class GUI extends Application {
         botToken.setStyle("-fx-text-inner-color: #FFFFFF; -fx-font: 15 Consolas; -fx-background-color: #202020;");
         botToken.setOnAction(e -> {
         	
-        	token = botToken.getText();
+        	try {
+        		token = botToken.getText();
+				updatePreferences("preferences.txt");
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
         	
         });
         
@@ -170,19 +144,102 @@ public class GUI extends Application {
         	
         });
         
+        //create directory selector button
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        
+        //determine the default location that opens up first
+        directoryChooser.setInitialDirectory(new File("C:\\"));
+
+        chooseDirectoryButton = new Button("Select Directory");
+        chooseDirectoryButton.setStyle("-fx-font: 20 Consolas; -fx-base: #202020;");
+        chooseDirectoryButton.setOnAction(e -> {
+            try{
+            	//pick a folder
+            	selectedDirectory = directoryChooser.showDialog(primaryStage);
+            	selectedDirectoryString = selectedDirectory.getAbsolutePath();
+            	updatePreferences("preferences.txt");
+            } catch (Exception eeee) {
+            	//because java sucks and you need try catch everywhere when something is null
+            	System.out.println("no directory selected!");
+            }
+
+            
+        });
+        
         //GUI text so it doesn't look boring
         Label mainDescription = new Label("The JoeBot GUI");
         mainDescription.setStyle("-fx-font: 20 Consolas; -fx-base: #202020;");
         mainDescription.setTextFill(Color.web("#FFFFFF"));
+        
+        //GUI text so it doesn't look boring
+        Label fileStatus = new Label("You must enter a keyword!");
+        fileStatus.setStyle("-fx-font: 15 Consolas; -fx-base: #202020;");
+        fileStatus.setTextFill(Color.web("#FFFFFF"));
+        fileStatus.setVisible(false);
         
         //GUI text to indicate status
         botStatus = new Label();
         botStatus.setStyle("-fx-font: 15 Consolas; -fx-base: #202020;");
         botStatus.setTextFill(Color.web("#FFFFFF"));
         botStatus.setVisible(false);
-        //hide label when not running
         
-
+        //file chooser
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Open Resource File");
+        
+        //create file button
+        fileButton = new Button("Add image"); 
+        fileButton.setStyle("-fx-font: 20 Consolas; -fx-base: #202020;");
+        fileButton.setOnAction(e -> {
+            
+        	//checks if keyword is null; if it is, then don't open resource window (causes errors when cancelled)
+        	if(!imageKeyword.equals("null")) {
+        		
+        		scanImagesFolder();
+                
+        		//open resource window after scanning folder
+                List<File> list = fileChooser.showOpenMultipleDialog(primaryStage);
+    	        try {	
+    	        	
+    	        	//this loop exists if multiple images are selected, which is amazing if i say so myself
+                	for(File file : list) {
+                		
+                		//scan again after each image is copied to ensure no replacements after each repetition
+    	        		scanImagesFolder();
+    	        		
+    	        		//get source and declare destination file
+    	        		Path from = Paths.get(file.toURI());
+    	        		
+    	        		//rename by increments
+    	                Path to = Paths.get(selectedDirectoryString + "\\" + imageKeyword + " " + increment + ".png");
+    	                
+    	                //copy the file to destination
+    	                CopyOption[] options = new CopyOption[]{
+    	                        StandardCopyOption.REPLACE_EXISTING,
+    	                        StandardCopyOption.COPY_ATTRIBUTES
+    	                };
+    	                try {
+    						Files.copy(from, to, options);
+    						fileStatus.setText(imageKeyword + " " + increment + " has been copied to: \n" + selectedDirectoryString);
+    						fileStatus.setVisible(true);
+    					} catch (IOException e1) {
+    						// TODO Auto-generated catch block
+    						e1.printStackTrace();
+    					}
+                	}
+    	        } catch (Exception eee) {
+    	        	
+    	        	//declare to file selected
+    	        	System.out.println("no files selected!");
+    	        } 	
+        	} else {
+        		//you can't have null (default placeholder) as a keyword dummy
+        		System.out.println("No keyword specified!");
+        		fileStatus.setVisible(true);
+        	}
+            
+        }); 
+        
         //GridPane with 10px padding around edge
         GridPane grid = new GridPane();
         grid.setPadding(new Insets(10, 10, 10, 10));
@@ -197,7 +254,9 @@ public class GUI extends Application {
         GridPane.setConstraints(botToken, 0, 3);
         GridPane.setConstraints(fileButton, 0, 4);
         GridPane.setConstraints(imageKeywordTextfield, 1, 4);
-        GridPane.setConstraints(restartButton, 0, 5);
+        GridPane.setConstraints(fileStatus, 0, 5);
+        GridPane.setConstraints(chooseDirectoryButton, 0, 6);        
+        GridPane.setConstraints(restartButton, 0, 7);
         
         //create a background fill 
         BackgroundFill background_fill = new BackgroundFill(Color.gray(0.15), CornerRadii.EMPTY, Insets.EMPTY); 
@@ -209,8 +268,8 @@ public class GUI extends Application {
         grid.setBackground(background); 
         
         //put it all together into a window and display it
-        grid.getChildren().addAll(mainDescription, toggleButton, exitButton, botStatus, fileButton, restartButton, botToken, imageKeywordTextfield);        
-        Scene scene = new Scene(grid, 350, 300, Color.GRAY);
+        grid.getChildren().addAll(mainDescription, toggleButton, exitButton, botStatus, fileButton, chooseDirectoryButton, restartButton, fileStatus, botToken, imageKeywordTextfield);        
+        Scene scene = new Scene(grid, 400, 360, Color.GRAY);
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
         primaryStage.show();
@@ -243,12 +302,19 @@ public class GUI extends Application {
                 botStatus.setText("JoeBot is currently running...");
                 
                 
-                //change GUI buttons accordingly
-                startStop = false;
-                toggleButton.setText("Stop");
+                //hide GUI stuff accordingly
                 exitButton.setVisible(false);
+
+                //imageKeywordTextfield.setVisible(false);
+                
+                //change toggle button text
+                toggleButton.setText("Stop");
+                
+                //show bot status
                 botStatus.setVisible(true);
-                fileButton.setVisible(false);
+                
+                startStop = false;
+                
 
             } catch (Exception e) {
             	
@@ -261,7 +327,12 @@ public class GUI extends Application {
     		
     		//shut down all bot stuff
     		shutDownBotAPI();
+    		
+    		//show buttons again
+    		fileButton.setVisible(true);
     		exitButton.setVisible(true);
+    		
+    		//hide bot status
     		botStatus.setVisible(false);
     		
     	}
@@ -285,7 +356,7 @@ public class GUI extends Application {
     	fileNames.clear();
     	
     	//planning to allow user to change image destination depending on .jar location
-    	File folder = new File("C:\\Users\\dern\\Desktop\\images");
+    	File folder = new File(selectedDirectoryString);
     	
     	//scan through selected folder
         File[] listOfFiles = folder.listFiles();
@@ -309,6 +380,34 @@ public class GUI extends Application {
         //increment exists to change file suffix to the correct number so there are no repeats
         increment = fileNames.size();
         System.out.println(increment);
+    }
+    
+    ////UPDATE WHICH LINE IS READ AND THE APPROPRIATE VARIABLES OF DIRECTORY AND TOKEN FROM THE PREFERENCES FILE
+    public void readPreferences(String fileName) throws IOException {
+    	BufferedReader br = new BufferedReader(new FileReader(fileName));
+    	//indicate which line currently reading
+    	int i = 1;
+    	try {
+    	    String line;
+    	    while ((line = br.readLine()) != null) {
+    	       if (i == 1) {
+    	    	   selectedDirectoryString = line.substring(16);
+    	    	   i++;
+    	       } else {
+    	    	   token = line.substring(8);
+    	       }
+    	    }
+    	} finally {
+    	    br.close();
+    	}
+    }
+    
+    public void updatePreferences(String fileName) throws IOException {
+    	PrintWriter writer = new PrintWriter(fileName);
+    	writer.print("lastDirectory = " + selectedDirectoryString + "\ntoken = " + token);
+    	System.out.println("lastDirectory = " + selectedDirectoryString + "\ntoken = " + token);
+    	writer.close();
+            
     }
     
 }
