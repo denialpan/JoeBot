@@ -11,4 +11,6 @@ Update 8/5/20: Added perhaps the hardest thing, but the most anticipated feature
 
 Update 8/13/20: Added a small, but helpful thing, where the bot is able to save preferences (currently only the directory and token) into a basic text file. Reduces the irritable process of having to copy and paste the token every time the bot is turned on. Same applies of having to select a directory.
 
+Update 8/16/20: Fixed minor issue where the bot would not read from preferences file upon startup.
+
 Why is it called JoeBot? Dunno, just an ongoing joke among my friends.
