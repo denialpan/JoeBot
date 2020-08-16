@@ -1,5 +1,6 @@
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -81,15 +82,8 @@ public class GUI extends Application {
     //create the actual GUI, but not the bot listeners
     public void start(Stage primaryStage) {
     	
-    	try {
-			readPreferences("preferences.txt");
-		} catch (IOException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		}
-        //set title window
+    	//set title window
     	primaryStage.setTitle("JoeBot");     
-    	
     	
         //create toggle button
         toggleButton = new Button("Run");
@@ -192,6 +186,12 @@ public class GUI extends Application {
         fileButton.setStyle("-fx-font: 20 Consolas; -fx-base: #202020;");
         fileButton.setOnAction(e -> {
             
+        	try {
+				readPreferences("preferences.txt");
+			} catch (IOException e2) {
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			}
         	//checks if keyword is null; if it is, then don't open resource window (causes errors when cancelled)
         	if(!imageKeyword.equals("null")) {
         		
@@ -290,6 +290,12 @@ public class GUI extends Application {
     	//detects if startStop is true or false. Pretty sure its obvious what happens when its true or false
     	if (startStop) {
     		
+    		try {
+    			readPreferences("preferences.txt");
+    		} catch (IOException e2) {
+    			// TODO Auto-generated catch block
+    			e2.printStackTrace();
+    		}
     		//start the bot api and connect the bot to websocket
     		System.out.println("Bot has been turned on");
             
@@ -384,31 +390,33 @@ public class GUI extends Application {
     
     ////UPDATE WHICH LINE IS READ AND THE APPROPRIATE VARIABLES OF DIRECTORY AND TOKEN FROM THE PREFERENCES FILE
     public void readPreferences(String fileName) throws IOException {
-    	BufferedReader br = new BufferedReader(new FileReader(fileName));
-    	//indicate which line currently reading
-    	int i = 1;
     	try {
-    	    String line;
-    	    while ((line = br.readLine()) != null) {
-    	       if (i == 1) {
-    	    	   selectedDirectoryString = line.substring(16);
-    	    	   i++;
-    	       } else {
-    	    	   token = line.substring(8);
-    	       }
-    	    }
-    	} finally {
-    	    br.close();
-    	}
+    		String[] prefs = {null, null};
+    		int i = 0;
+    		//the file to be opened for reading  
+    		FileInputStream fis = new FileInputStream("preferences.txt");       
+    		Scanner sc = new Scanner(fis);    //file to be scanned  
+    		//returns true if there is another line to read  
+    		while(sc.hasNextLine()) {  
+    			prefs[i] = (sc.nextLine());
+    			i++;
+    		}
+    		sc.close();     //closes the scanner  
+    		selectedDirectoryString = prefs[0];
+    		System.out.println(selectedDirectoryString);
+    		token = prefs[1];
+    		System.out.println(token);
+    	} catch(IOException e) {  
+    		e.printStackTrace();  
+    	} 
     }
     
     public void updatePreferences(String fileName) throws IOException {
     	PrintWriter writer = new PrintWriter(fileName);
-    	writer.print("lastDirectory = " + selectedDirectoryString + "\ntoken = " + token);
-    	System.out.println("lastDirectory = " + selectedDirectoryString + "\ntoken = " + token);
+    	writer.print(selectedDirectoryString + "\n" + token);
+    	System.out.println(selectedDirectoryString + "\n" + token);
     	writer.close();
             
     }
     
 }
-
