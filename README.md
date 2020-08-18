@@ -13,4 +13,6 @@ Update 8/13/20: Added a small, but helpful thing, where the bot is able to save 
 
 Update 8/16/20: Fixed minor issue where the bot would not read from preferences file upon startup.
 
+Update 8/16/20: Added the thing I've been dreaming of in my head: Bot is now able to not only add images from the GUI and automatially name them depending on keyword, but it is also able to scan and retrieve images that fall under the same name keyword taken from the user, determining which random image will be send into the server.
+
 Why is it called JoeBot? Dunno, just an ongoing joke among my friends.
