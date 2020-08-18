@@ -15,6 +15,6 @@ In other words, theres no need for the bot to run from the IDE; it can now be tu
 
 **Update 8/17/20:** Added the ability for the bot to bulk-mass delete messages from a single command. How many messages to be deleted can be determined from the user. (I have it set to delete ONLY if the message comes from the bot or the user that issued the command).
 
-**Update 8/18/20:** Added the thing I've been dreaming of in my head: Bot is now able to not only add images from the GUI and automatially name them depending on keyword, but it is also able to scan and retrieve images that fall under the same name keyword taken from the user, determining which random image will be send into the server.
+**Update 8/18/20:** Added the thing I've been dreaming of in my head: Bot is now able to not only add images from the GUI and automatially name them depending on keyword, but it is also able to scan and retrieve images that fall under the same name keyword taken from the user, determining which random image will be sent into the server.
 
 *Why is it called JoeBot? Dunno, just an ongoing joke among my friends.*
