@@ -22,8 +22,6 @@ public class Images extends ListenerAdapter {
 	
     public void onMessageReceived(MessageReceivedEvent event) {
 
-    	//string here so i don't need to type it a million times
-    	String keyword = "~img ";
     	/*
     	// Create the EmbedBuilder instance
     	EmbedBuilder embeded = new EmbedBuilder();
@@ -32,7 +30,7 @@ public class Images extends ListenerAdapter {
     	embeded.setColor(new Color(0x8A2BE2));
     	embeded.setDescription("joe commands\n");
 */
-        if (event.getMessage().getContentRaw().substring(0, 5).equalsIgnoreCase(keyword)) {
+        if (event.getMessage().getContentRaw().substring(0, 5).equalsIgnoreCase("~img ")) {
 
         	//get default directory for preferences.txt
         	try {
