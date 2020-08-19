@@ -3,33 +3,42 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
 import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.entities.MessageHistory;
-import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
 public class Images extends ListenerAdapter {
 	
 	ArrayList<File> fileNames = new ArrayList<File>();
+	ArrayList<String> distinctFileNames = new ArrayList<String>();
 	String selectedDirectoryString;
 	Random random = new Random();
+	EmbedBuilder embeded = new EmbedBuilder();
 	
     public void onMessageReceived(MessageReceivedEvent event) {
 
-    	/*
     	// Create the EmbedBuilder instance
-    	EmbedBuilder embeded = new EmbedBuilder();
-
-    	embeded.setTitle("JoeBot Commands");
+    	embeded.setTitle("Available Image Commands");
     	embeded.setColor(new Color(0x8A2BE2));
-    	embeded.setDescription("joe commands\n");
-*/
+
+    	if (event.getMessage().getContentRaw().equalsIgnoreCase("~img")) {
+
+        	//get default directory for preferences.txt
+        	try {
+				readPreferences("preferences.txt");
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        	
+        	//scan and sort through images to find images with the same name as keyword
+        	generateImageCommands(event);
+        	
+        }
+	
         if (event.getMessage().getContentRaw().substring(0, 5).equalsIgnoreCase("~img ")) {
 
         	//get default directory for preferences.txt
@@ -45,10 +54,30 @@ public class Images extends ListenerAdapter {
         	
         	//scan and sort through images to find images with the same name as keyword
         	scanImagesFolder(fileKeyword, event);
-        	
-        	
         }
-        
+    }
+    
+    public void generateImageCommands(MessageReceivedEvent ev) {
+    	distinctFileNames.clear();
+    	File folder = new File(selectedDirectoryString);
+    	File[] listOfFiles = folder.listFiles();
+    	
+    	//loop through array and create an arry with UNIQUE values 
+    	for (int i = 0; i < listOfFiles.length; i++) {
+    		
+    		if(!distinctFileNames.contains(listOfFiles[i].getName().replaceAll("\\d", "").replaceAll(".png", "").trim())){
+    			
+    			distinctFileNames.add(listOfFiles[i].getName().replaceAll("\\d", "").replaceAll(".png", "").trim());
+    		}  	
+        }  
+    	
+    	String command = "";
+    	for (String s : distinctFileNames) {
+    		command = command + s + "\n";
+    	}
+    	System.out.println(command);
+    	embeded.setDescription(command);
+    	ev.getChannel().sendMessage(embeded.build()).queue();
     }
     
     //scans all images in folder
@@ -74,10 +103,10 @@ public class Images extends ListenerAdapter {
             }
         }        
         
-        //determine if images were found under the keyword, if so, send image, if not, display error
+        //determine if images were found under the keyword, if so, send image, if not, display available image commands
         if (fileNames.size() == 0) {
         	
-        	ev.getChannel().sendMessage("no images match!").queue();
+        	generateImageCommands(ev);
         	
         } else {
         	

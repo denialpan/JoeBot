@@ -38,7 +38,7 @@ public class GUI extends Application {
 	//initialize bot api	
 	JDA api;
 	
-	//initalize file increment integer
+	//initalize file increment suffix integer
 	int increment;
 	
 	//initialize button toggle functionality
@@ -71,7 +71,7 @@ public class GUI extends Application {
     //initialize window
     Stage primaryStage;   
 
-    //something here that i need but i dont know why
+    //something here that i need but i dont know why /shrug
     public static void main(String[] args) {
         launch(args);
         
@@ -304,7 +304,7 @@ public class GUI extends Application {
             try {
             	
                 api = new JDABuilder(AccountType.BOT).setToken(token).buildAsync();
-                api.addEventListener(new Commands(), new Images());
+                api.addEventListener(new Commands(), new Images(), new Delete());
                 botStatus.setText("JoeBot is currently running...");
                 
                 
@@ -391,32 +391,46 @@ public class GUI extends Application {
     ////UPDATE WHICH LINE IS READ AND THE APPROPRIATE VARIABLES OF DIRECTORY AND TOKEN FROM THE PREFERENCES FILE
     public void readPreferences(String fileName) throws IOException {
     	try {
+    		//temporary array to hold values of each line
     		String[] prefs = {null, null};
+    		
+    		//indicate the index of the line being read
     		int i = 0;
+    		
     		//the file to be opened for reading  
     		FileInputStream fis = new FileInputStream("preferences.txt");       
-    		Scanner sc = new Scanner(fis);    //file to be scanned  
+    		
+    		//file to be scanned  
+    		Scanner sc = new Scanner(fis);    
+    		
     		//returns true if there is another line to read  
     		while(sc.hasNextLine()) {  
+    			
     			prefs[i] = (sc.nextLine());
     			i++;
+    		
     		}
-    		sc.close();     //closes the scanner  
+    		
+    		sc.close();
+    		
+    		//assign values to global variables
     		selectedDirectoryString = prefs[0];
-    		System.out.println(selectedDirectoryString);
     		token = prefs[1];
-    		System.out.println(token);
+    		
     	} catch(IOException e) {  
     		e.printStackTrace();  
     	} 
     }
     
+    //method to update preferences file
     public void updatePreferences(String fileName) throws IOException {
+    	
+    	//open file, replace values, and close file
     	PrintWriter writer = new PrintWriter(fileName);
     	writer.print(selectedDirectoryString + "\n" + token);
-    	System.out.println(selectedDirectoryString + "\n" + token);
     	writer.close();
             
     }
     
 }
+
