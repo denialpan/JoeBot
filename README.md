@@ -1,5 +1,6 @@
 # JoeBot
-Upcoming version of my old discord bot with more features in the future.
+This project only serves as a practice tool for me to understand and grasp the knowledge of basic algorithms and good coding practices, while also learning possible optimization methods. I most certainly do NOT intend on making this a full functioning 24/7 bot. This is only for my friends. This project will never be abandoned, because learning will never cease, but do expect less and less updates from this, as I continue to learn other languages and start more important projects.
+
 Currently has a functioning GUI that can run and stop the bot at will, including terminating the bot when the window is closed (not minimized). 
 
 In other words, theres no need for the bot to run from the IDE; it can now be turned on from a standalone .jar file.
